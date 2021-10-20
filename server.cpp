@@ -7,7 +7,6 @@
 #include "http_connection_server.h"
 
 #include <cstdlib>
-#include <cli.h>
 
 
 #include "logger_server.h"
@@ -18,25 +17,22 @@ using grpc::ServerContext;
 using grpc::Status;
 
 
-int main(int argc, char *argv[]) {
+int main() {
     try {
-        cli cli_ob{argc, argv};
         logger_server service;
-
+        const std::string addr = "0.0.0.0:50051";
         grpc::EnableDefaultHealthCheckService(true);
         grpc::reflection::InitProtoReflectionServerBuilderPlugin();
         ServerBuilder builder;
-        builder.AddListeningPort(cli_ob.get_address(), grpc::InsecureServerCredentials());
+        builder.AddListeningPort(addr, grpc::InsecureServerCredentials());
         builder.RegisterService(&service);
         std::unique_ptr<Server> server(builder.BuildAndStart());
-        std::cout << "Server listening on " << cli_ob.get_address() << std::endl;
-
-        std::cout << std::endl;
+        std::cout << "Server listening on " << addr << std::endl;
 
         asio::io_context ioc{1};
 
         tcp::acceptor acceptor{ioc, boost::asio::ip::tcp::endpoint{boost::asio::ip::tcp::v4(),
-                                                                   cli_ob.get_port()}};
+                                                                   8080}};
         std::cout << "Running on http://" << acceptor.local_endpoint().address() << ":"
                   << acceptor.local_endpoint().port();
 

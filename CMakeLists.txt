@@ -49,8 +49,8 @@ foreach(_target
         client server)
     add_executable(${_target} "inc/logger_${_target}.h" "src/logger_${_target}.cpp"  "${_target}.cpp"
             ${hw_proto_srcs}
-            ${hw_grpc_srcs} inc/http_connection.h  inc/utilities.h   inc/http_connection_${_target}.h inc/cli.h
-           src/http_connection.cpp src/http_connection_${_target}.cpp src/cli.cpp )
+            ${hw_grpc_srcs} inc/http_connection.h  inc/utilities.h   inc/http_connection_${_target}.h
+           src/http_connection.cpp src/http_connection_${_target}.cpp  )
     target_link_libraries(${_target}
             ${_REFLECTION}
             ${_GRPC_GRPCPP}
