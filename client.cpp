@@ -8,9 +8,12 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <cstdlib>
 #include <boost/algorithm/string.hpp>
+#include <boost/asio/thread_pool.hpp>
+#include <boost/asio/post.hpp>
 
 
 using grpc::Channel;
@@ -29,6 +32,7 @@ void initialize_clients(std::vector<logger_client> &clients) {
 int main() {
     try {
         std::vector<logger_client> clients;
+        asio::thread_pool pool(4);
 
         initialize_clients(clients);
         asio::io_context ioc{1};
@@ -38,11 +42,12 @@ int main() {
                                                               8080}};
         std::cout << "Running on http://" << acceptor.local_endpoint().address() << ":"
                   << acceptor.local_endpoint().port() << std::endl;
-        std::vector<std::string> v;
+        concurrent_map<std::string> m;
         tcp::socket socket{ioc};
-        http_server(acceptor, socket, v, clients);
+        http_server(acceptor, pool, socket, m, clients);
         std::thread thread([&ioc]() { ioc.run(); });
         thread.join();
+
 
     }
     catch (std::exception const &e) {

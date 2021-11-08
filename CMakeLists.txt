@@ -27,7 +27,7 @@ find_package(Boost REQUIRED system  program_options )
 # Generated sources
 set(hw_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/logger.pb.cc")
 set(hw_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/logger.pb.h")
-set(hw_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/logger.grpc.pb.cc")
+set(hw_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/logger.grpc.pb.cc" )
 set(hw_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/logger.grpc.pb.h")
 add_custom_command(
         OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}"
@@ -50,7 +50,7 @@ foreach(_target
     add_executable(${_target} "inc/logger_${_target}.h" "src/logger_${_target}.cpp"  "${_target}.cpp"
             ${hw_proto_srcs}
             ${hw_grpc_srcs} inc/http_connection.h  inc/utilities.h   inc/http_connection_${_target}.h
-           src/http_connection.cpp src/http_connection_${_target}.cpp  )
+           src/http_connection.cpp src/http_connection_${_target}.cpp src/latch.cpp inc/latch.h src/concurrent_map.cpp inc/concurrent_map.h)
     target_link_libraries(${_target}
             ${_REFLECTION}
             ${_GRPC_GRPCPP}
