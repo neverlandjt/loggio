@@ -15,6 +15,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include "concurrent_map.h"
 
 namespace beast = boost::beast;
 namespace asio = boost::asio;
@@ -22,8 +23,8 @@ using tcp = boost::asio::ip::tcp;
 
 class http_connection : public std::enable_shared_from_this<http_connection> {
 public:
-    explicit http_connection(tcp::socket socket, std::vector<std::string> &v)
-            : socket_(std::move(socket)), v(v) {
+    explicit http_connection(tcp::socket socket, concurrent_map<std::string>& m)
+            : socket_(std::move(socket)), m(m) {
     }
 
     void start() {
@@ -32,7 +33,7 @@ public:
     }
 
 protected:
-    std::vector<std::string> &v;
+    concurrent_map<std::string>& m;
     tcp::socket socket_;
     beast::flat_buffer buffer_{8192};
     beast::http::request<beast::http::string_body> request_;

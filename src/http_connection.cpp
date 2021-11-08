@@ -30,9 +30,8 @@ void http_connection::process_request() {
 
 void http_connection::process_get() {
     response_.set(beast::http::field::content_type, "text/html");
-    std::stringstream ss;
-    for (auto &i: v) ss << i << "\n";
-    beast::ostream(response_.body()) << ss.str();
+
+    beast::ostream(response_.body()) << m.get_map("Objects: ");
 }
 
 void http_connection::write_response() {
