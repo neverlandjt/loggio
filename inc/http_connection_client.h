@@ -10,24 +10,28 @@
 
 class http_connection_client : public http_connection {
 public:
-    explicit http_connection_client(asio::thread_pool &pool_, tcp::socket
-    socket, concurrent_map<std::string>& m, std::vector<logger_client> &clients)
-            : http_connection(std::move(socket), m), clients(clients), pool_(pool_) {}
+    explicit http_connection_client( tcp::socket
+    socket, concurrent_map<std::string> &m, std::vector<std::shared_ptr<logger_client>> &clients)
+            : http_connection(std::move(socket), m), clients(clients) {}
 
 protected:
-    std::vector<logger_client> &clients;
-    asio::thread_pool &pool_;
+    std::vector<std::shared_ptr<logger_client>> &clients;
 
     void process_request() override;
 
     void process_post();
 
+    void process_get_health();
+
+    bool check_quorum();
+
 
 };
 
 
-void http_server(tcp::acceptor &acceptor,asio::thread_pool &pool_, tcp::socket &socket, concurrent_map<std::string>& m,
-                 std::vector<logger_client> &clients);
+void http_server(tcp::acceptor &acceptor,
+                 concurrent_map<std::string> &message_map_,
+                 std::vector<std::shared_ptr<logger_client>> &clients);
 
 
 #endif //LOGGIO_HTTP_CONNECTION_CLIENT_H

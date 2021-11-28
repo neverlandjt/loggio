@@ -50,7 +50,7 @@ foreach(_target
     add_executable(${_target} "inc/logger_${_target}.h" "src/logger_${_target}.cpp"  "${_target}.cpp"
             ${hw_proto_srcs}
             ${hw_grpc_srcs} inc/http_connection.h  inc/utilities.h   inc/http_connection_${_target}.h
-           src/http_connection.cpp src/http_connection_${_target}.cpp src/latch.cpp inc/latch.h src/concurrent_map.cpp inc/concurrent_map.h)
+           src/http_connection.cpp src/http_connection_${_target}.cpp src/latch.cpp inc/latch.h  inc/concurrent_map.h inc/concurrent_queue.h)
     target_link_libraries(${_target}
             ${_REFLECTION}
             ${_GRPC_GRPCPP}

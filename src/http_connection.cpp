@@ -14,8 +14,8 @@ void http_connection::process_request() {
             response_.set(beast::http::field::server, "Beast");
             process_get();
             break;
-        default:
 
+        default:
             response_.result(beast::http::status::bad_request);
             response_.set(beast::http::field::content_type, "text/plain");
             beast::ostream(response_.body())
@@ -39,5 +39,13 @@ void http_connection::write_response() {
         self->socket_.shutdown(tcp::socket::shutdown_send, ec);
         self->deadline_.cancel();
     });
+}
+
+void http_connection::read_request() {
+    beast::http::async_read(socket_, buffer_, request_,
+                            [self = shared_from_this()](beast::error_code ec, std::size_t bytes_transferred) {
+                                boost::ignore_unused(bytes_transferred);
+                                if (!ec) self->process_request();
+                            });
 }
 

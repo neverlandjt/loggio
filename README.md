@@ -13,7 +13,7 @@ docker build --build-arg target=server --no-cache -t server .
 ```
 3. Run server containers as much as needed, use the port to expose web-server to local machine
 ```asm
-docker run  -p <local_port>:8080 --name <server_name> -d server
+docker run  -p <local_port>:8081 --name <server_name> -d server
 ```
 4. Extract server's IP for inter-node communication
 ```asm

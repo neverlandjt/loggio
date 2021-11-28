@@ -11,16 +11,17 @@
 #include <map>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/thread/latch.hpp>
 
 using boost::property_tree::ptree;
 using boost::property_tree::read_json;
 using boost::property_tree::write_json;
 
-void sync_nodes(logger_client &greeter, const std::string &message, std::shared_ptr<latch> &latch_) {
-    std::string reply = greeter.UpdateList(message);
-    std::cout << "received: " << reply << std::endl;
-    latch_->count_down();
+void sync_nodes(logger_client &greeter, LoggerRequest request, std::shared_ptr<latch> &latch_) {
+    greeter.pending_q.push_back(q_type{std::move(request), latch_});
+
 }
+
 
 ptree parse_request(const std::string &json) {
     ptree pt;
