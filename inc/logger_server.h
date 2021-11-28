@@ -36,21 +36,24 @@ typedef boost::mt19937 Range;
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
+using grpc::ServerReader;
 using grpc::Status;
 using loggio::Logger;
 using loggio::LoggerReply;
 using loggio::LoggerRequest;
+using loggio::LoggerHealthCheck;
 
 
 class logger_server final : public Logger::Service {
 
+    static size_t rand();
+
     Status UpdateList(ServerContext *context, const LoggerRequest *request,
-                      LoggerReply *reply) override {
-        Range range;
-        boost::random::uniform_int_distribution<> time_ms(100, 5000);
-        std::this_thread::sleep_for(std::chrono::milliseconds(time_ms(range)));
-        reply->set_status("ok");
-        map.push(request->message());
+                      LoggerReply *reply) override;
+
+    Status HealthCheck(ServerContext *context, const LoggerHealthCheck *request,
+                       LoggerHealthCheck *reply) override {
+        reply->set_healthy(true);
         return Status::OK;
     }
 

@@ -42,17 +42,7 @@ protected:
     asio::steady_timer deadline_{
             socket_.get_executor(), std::chrono::seconds(60)};
 
-    void
-    read_request() {
-        beast::http::async_read(
-                socket_,
-                buffer_,
-                request_,
-                [self = shared_from_this()](beast::error_code ec, std::size_t bytes_transferred) {
-                    boost::ignore_unused(bytes_transferred);
-                    if (!ec) self->process_request();
-                });
-    }
+    void read_request();
 
     virtual void process_request() ;
 

@@ -19,15 +19,15 @@ void http_connection_client::process_post() {
     response_.set(beast::http::field::content_type, "text/html");
     beast::ostream(response_.body()) << message;
     std::shared_ptr<latch> latch_(new latch(write_concern > 0 ? write_concern : 1));
-
+    LoggerRequest request;
+    request.set_idx(m.push(message) + 1);
+    request.set_message(message);
     for (auto &client : clients)
-        asio::post(pool_, [&client, message, &latch_] {
-            return sync_nodes(client, message, latch_);
-        });
+        client->pending_q.push_back(q_type{request, latch_});
 
     latch_->count_down();
     latch_->wait();
-    m.push(message);
+
 }
 
 void http_connection_client::process_request() {
@@ -38,13 +38,15 @@ void http_connection_client::process_request() {
         case beast::http::verb::get:
             response_.result(beast::http::status::ok);
             response_.set(beast::http::field::server, "Beast");
-            process_get();
+            if (request_.target() == "/health") process_get_health();
+            else process_get();
             break;
 
         case beast::http::verb::post:
             response_.result(beast::http::status::ok);
             response_.set(beast::http::field::server, "Beast");
-            process_post();
+            if (check_quorum()) process_post();
+            else beast::ostream(response_.body()) << "No Quorum";
             break;
 
         default:
@@ -60,13 +62,27 @@ void http_connection_client::process_request() {
     write_response();
 }
 
-void http_server(tcp::acceptor &acceptor, asio::thread_pool &pool_, tcp::socket &socket, concurrent_map<std::string>& m,
-                 std::vector<logger_client> &clients) {
-    acceptor.async_accept(socket,
-                          [&](beast::error_code ec) {
-                              if (!ec)
-                                  std::make_shared<http_connection_client>(pool_, std::move(socket), m,
-                                                                           clients)->start();
-                              http_server(acceptor, pool_, socket, m, clients);
-                          });
+void http_connection_client::process_get_health() {
+    response_.set(beast::http::field::content_type, "text/html");
+    std::stringstream ss;
+    ss << "Secondary nodes health status:<br>";
+    for (const auto &item : clients)
+        ss << "Node " << item->id << ": " << (item->healthy ? "Healthy<br>" : "Unhealthy<br>");
+    beast::ostream(response_.body()) << ss.str();
+}
+
+bool http_connection_client::check_quorum() {
+    size_t healthy = 1;
+    for (auto &client: clients) healthy = healthy + client->healthy;
+    return ((clients.size() + 1) / 2 + 1) == healthy;
+}
+
+void http_server(tcp::acceptor &acceptor, concurrent_map<std::string> &message_map_,
+                 std::vector<std::shared_ptr<logger_client>> &clients) {
+    acceptor.async_accept(
+            [&](beast::error_code ec, tcp::socket socket) {
+                if (!ec)
+                    std::make_shared<http_connection_client>(std::move(socket),message_map_, clients)->start();
+                http_server(acceptor, message_map_, clients);
+            });
 }
