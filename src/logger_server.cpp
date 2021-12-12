@@ -7,7 +7,7 @@
 size_t logger_server::rand() {
     std::unique_ptr<Range> rng2 = std::make_unique<Range>();
     rng2->seed(time(NULL));
-    boost::normal_distribution<> distribution(100, 5000);
+    boost::normal_distribution<> distribution(100, 500);
     boost::variate_generator<Range, boost::normal_distribution<> > generator(*rng2, distribution);
     return generator();
 }
