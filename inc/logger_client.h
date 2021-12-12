@@ -40,6 +40,7 @@ private:
     std::unique_ptr<Logger::Stub> stub_;
     std::mutex m;
     std::condition_variable cv;
+    size_t timeout = 600;
 };
 
 

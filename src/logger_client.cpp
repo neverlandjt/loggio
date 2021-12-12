@@ -11,6 +11,8 @@
         LoggerReply reply;
 
         ClientContext context;
+
+        context.set_deadline(std::chrono::system_clock::now() + std::chrono::milliseconds (timeout));
         std::unique_lock<std::mutex> lck(m);
         cv.wait(lck, [this] { return healthy; });
         auto queue_item = pending_q.pop_front();
@@ -32,6 +34,8 @@ void logger_client::HealthCheck() {
     LoggerHealthCheck reply;
 
     ClientContext context;
+
+    context.set_deadline(std::chrono::system_clock::now() + std::chrono::milliseconds (timeout));
 
     Status status = stub_->HealthCheck(&context, request, &reply);
 

@@ -18,7 +18,7 @@ void http_connection_client::process_post() {
 
     response_.set(beast::http::field::content_type, "text/html");
     beast::ostream(response_.body()) << message;
-    std::shared_ptr<latch> latch_(new latch(write_concern > 0 ? write_concern : 1));
+    std::shared_ptr <latch> latch_(new latch(write_concern > 0 ? write_concern : 1));
     LoggerRequest request;
     request.set_idx(m.push(message) + 1);
     request.set_message(message);
@@ -74,15 +74,16 @@ void http_connection_client::process_get_health() {
 bool http_connection_client::check_quorum() {
     size_t healthy = 1;
     for (auto &client: clients) healthy = healthy + client->healthy;
-    return ((clients.size() + 1) / 2 + 1) == healthy;
+    std::cout << healthy << (clients.size()+ 1) / 2 + 1 << std::endl;
+    return ((clients.size() + 1) / 2 + 1) <= healthy;
 }
 
-void http_server(tcp::acceptor &acceptor, concurrent_map<std::string> &message_map_,
-                 std::vector<std::shared_ptr<logger_client>> &clients) {
+void http_server(tcp::acceptor &acceptor, concurrent_map <std::string> &message_map_,
+                 std::vector <std::shared_ptr<logger_client>> &clients) {
     acceptor.async_accept(
             [&](beast::error_code ec, tcp::socket socket) {
                 if (!ec)
-                    std::make_shared<http_connection_client>(std::move(socket),message_map_, clients)->start();
+                    std::make_shared<http_connection_client>(std::move(socket), message_map_, clients)->start();
                 http_server(acceptor, message_map_, clients);
             });
 }
